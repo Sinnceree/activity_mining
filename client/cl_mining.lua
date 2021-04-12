@@ -1,10 +1,15 @@
-local miningZone = BoxZone:Create(vector3(435.18, 2016.35, 110.49), 20, 20, {
-  name="mining_zone",
-  heading=340,
-  debugPoly=true,
-  minZ=106.69,
-  maxZ=114.29
-})
+local miningZone = {
+  zone = BoxZone:Create(vector3(435.18, 2016.35, 110.49), 20, 20, {
+    name="mining_zone",
+    heading=340,
+    debugPoly=true,
+    minZ=106.69,
+    maxZ=114.29
+  }),
+  mineableBlocks = {
+    {x = 438.3135, y = 2014.07, z = 108.9353}
+  }
+}
 
 
 
@@ -14,11 +19,20 @@ local insideMiningZone = false
 
 Citizen.CreateThread(function()
     while true do
-        local plyPed = PlayerPedId()
+        local plyPed = GetPlayerPed(-1)
         local coord = GetEntityCoords(plyPed)
-        insideMiningZone = miningZone:isPointInside(coord)
+        insideMiningZone = miningZone.zone:isPointInside(coord)
         if insideMiningZone and mining then
           miningStatus = "You can start mining now"
+
+          -- Check if the player is near any mineable blocks
+          for k, block in pairs(miningZone.mineableBlocks) do
+            local dis = GetDistanceBetweenCoords(coord["x"], coord["y"], coord["z"], block["x"], block["y"], block["z"], false)
+            if dis < 2 then
+              miningStatus = "Mine meee"
+            end
+          end
+          
         else
           miningStatus = "Please enter a mining zone"
         end
@@ -30,6 +44,9 @@ end)
 Citizen.CreateThread(function()
   while true do
       if mining then
+        for k, block in pairs(miningZone.mineableBlocks) do
+          DrawText3Ds(block["x"], block["y"], block["z"], "cunt")
+        end
         showText(miningStatus)
       end
       Citizen.Wait(1)
@@ -67,4 +84,20 @@ function showText(message)
   SetTextEntry("STRING")
   AddTextComponentString(message)
   DrawText(100, 100)
+end
+
+function DrawText3Ds(x,y,z, text)
+  local onScreen,_x,_y=World3dToScreen2d(x,y,z)
+  local px,py,pz=table.unpack(GetGameplayCamCoords())
+  
+  SetTextScale(0.35, 0.35)
+  SetTextFont(4)
+  SetTextProportional(1)
+  SetTextColour(255, 255, 255, 215)
+  SetTextEntry("STRING")
+  SetTextCentre(1)
+  AddTextComponentString(text)
+  DrawText(_x,_y)
+  local factor = (string.len(text)) / 370
+  DrawRect(_x,_y+0.0125, 0.015+ factor, 0.03, 41, 11, 41, 68)
 end
