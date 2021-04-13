@@ -29,13 +29,14 @@ function DrawText3Ds(x,y,z, text)
   DrawRect(_x,_y+0.0125, 0.015+ factor, 0.03, 41, 11, 41, 68)
 end
 
-function startMiningAnimation(rock)
+function startMiningAnimation(zone)
   local hits = 0;
   Citizen.CreateThread(function()
 
       while hits < 3 do
         Citizen.Wait(1)
         local ped = PlayerPedId()	
+        RequestAnimDict( "anim@heists@box_carry@")
         RequestAnimDict("melee@large_wpn@streamed_core")
         Citizen.Wait(100)
         TaskPlayAnim((ped), "melee@large_wpn@streamed_core", "ground_attack_on_spot", 8.0, 8.0, -1, 80, 0, 0, 0, 0)
@@ -48,13 +49,40 @@ function startMiningAnimation(rock)
         ClearPedTasks(ped)
         hits = hits + 1
         if hits == 3 then
+            
             DetachEntity(pickaxe, 1, true)
             DeleteEntity(pickaxe)
             DeleteObject(pickaxe)
             print("finished mining delete axe")
-            TriggerEvent("np-mining:collectedRock", rock)
+            TriggerEvent("np-mining:collectedRock", zone)
             break
         end        
       end
   end)
+end
+
+
+
+function pickupRock()
+  local holding = false
+  Citizen.CreateThread(function()
+    Citizen.Wait(1)
+    local ped = PlayerPedId()	
+    if not holding then
+      TaskPlayAnim((GetPlayerPed(-1)),"anim@heists@box_carry@","idle",4.0, 1.0, -1,49,0, 0, 0, 0)
+      rockObject = CreateObject(GetHashKey("prop_rock_4_cl_2"), 0, 0, 0, true, true, true) 
+      AttachEntityToEntity(rockObject, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 0x49D9), 0.40, -0.02, -0.02, 0, 0, 0, strue, true, false, true, 1, true)
+    end
+
+    Citizen.Wait(1000)
+    ClearPedTasks(ped)
+    DetachEntity(rockObject, 1, true)
+    DeleteEntity(rockObject)
+    DeleteObject(rockObject)
+    SetModelAsNoLongerNeeded(rockObject)
+    SetEntityAsMissionEntity(rockObject)
+    print("Dropping rock")
+    return
+  end)
+
 end

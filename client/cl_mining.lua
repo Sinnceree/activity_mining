@@ -8,87 +8,135 @@ local miningZones = {
   -- }),
 
   {
+    name = "mine_zone2",
+    area = BoxZone:Create(vector3(3372.43, 2656.71, -3.14), 44.8, 36.8, {
+      name="mine_zone2",
+      heading=351,
+      debugPoly=true,
+      minZ=-2.09,
+      maxZ=9.71
+    }),
+    maxMineAmount = 3
+  },
+
+  {
+    name = "mine_zone1",
     area = BoxZone:Create(vector3(3413.32, 2725.6, 2.37), 14.6, 10, {
-      name="mining_zone",
+      name="mine_zone1",
       heading=60,
       debugPoly=true
     }),  
-    mineableRocks = {
-      { id = "rock1", x = 3408.016, y = 2727.448, z = 1.913579 }
-    }
+    maxMineAmount = 3,
   }
-
 }
 
-local recentlyMinedRocks = {}
+local assignedZone = nil
+local zonesMined = {}
+
 local miningStatus = ""
-local mining = false
+local miningStarted = false
 local insideMiningZone = false
+local isMining = false
 
 Citizen.CreateThread(function()
-    while true do
-        local plyPed = GetPlayerPed(-1)
-        local coord = GetEntityCoords(plyPed)
-        
-        -- Lets loop through all zones and see if we're in one
-        for k, zone in pairs(miningZones) do
-          insideMiningZone = zone.area:isPointInside(coord)
 
-          if insideMiningZone and mining then
-            miningStatus = "Inside mining zone you can start mining now"
+  while true do
+    local playerPed = GetPlayerPed(-1)
+    local playerCoord = GetEntityCoords(playerPed)
 
-            for k, rock in pairs(zone.mineableRocks) do
-
-              -- Lets loop through all the recently done rocks and exclude that one
-              local dis = GetDistanceBetweenCoords(coord["x"], coord["y"], coord["z"], rock["x"], rock["y"], rock["z"], false)
-              DrawText3Ds(rock["x"], rock["y"], rock["z"], rock.id)
-              
-              if dis < 2 then
-                miningStatus = "Mine meee " .. rock.id
-                if IsControlJustPressed(1, 86) then
-                  startMiningRock(rock)
-                end
-              end
-
-              
-            end
-
-
-          else
-            miningStatus = "Please enter a mining zone"
-          end
-
-        end
-
-        showText(miningStatus)
-        Citizen.Wait(1)
+    -- Show message if theyre currently mining
+    if isMining and miningStarted then
+      miningStatus = "Currently Mining"
+    elseif not isMining and miningStarted then
+      miningStatus = "Waiting for player to mine"
     end
+
+    -- Now lets check if theyre assign a zone and trying to mine inside of it
+    if assignedZone and miningStarted then
+      insideMiningZone = assignedZone.area:isPointInside(playerCoord)
+
+      -- Now if the player is in the zone and clicks their button to mind in my case "E" lets start doing that
+      if insideMiningZone and IsControlJustPressed(1, 86) then
+        startMiningRock(assignedZone)
+      elseif not insideMiningZone then
+        miningStatus = "Please enter your assigned mining zone: " .. assignedZone.name
+      end
+      -- print(insideMiningZone)
+    end
+
+    showText(miningStatus)
+    Citizen.Wait(1)
+  end
+  
 end)
 
 
 -- Event Handlers
 RegisterNetEvent("np-mining:startMining")
 AddEventHandler("np-mining:startMining", function(source)
-  if not mining then
-    mining = true
+  if not miningStarted then
     print("Wanting to start mining " .. source)
+    TriggerEvent("np-mining:assignZone")
+  end
+end)
+
+
+RegisterNetEvent("np-mining:stopMining")
+AddEventHandler("np-mining:stopMining", function(source)
+  if miningStarted then
+    miningStarted = false
+    assignedZone = nil
+    print("Stopped mining")
   end
 end)
 
 RegisterNetEvent("np-mining:collectedRock")
-AddEventHandler("np-mining:collectedRock", function(rock)
+AddEventHandler("np-mining:collectedRock", function(zone)
+  isMining = false
+  zonesMined[zone.name] = zonesMined[zone.name] + 1
 
-  recentlyMinedRocks[rock.id] = rock
-  print(recentlyMinedRocks[rock.id])
-  print("got a call that a rock was done " .. rock.id)  
+  if (zonesMined[zone.name] == zone.maxMineAmount) then
+    print("Completed mining in this zone move on!")
+    miningStatus = "Completed mining in this zone move on!"
+  end
+
+  Citizen.Wait(1000)
+  pickupRock()
 end)
 
 
-function startMiningRock(rock)
-  if recentlyMinedRocks[rock.id] then
-    return print("Rock has already been mined")
+-- Used to generate a zone for the "Player" to mine
+RegisterNetEvent("np-mining:assignZone")
+AddEventHandler("np-mining:assignZone", function(zone)
+
+  if not assignedZone then
+    local randomZone = miningZones[math.random(#miningZones)]
+    assignedZone = randomZone
+    miningStarted = true
+    print("You have been assigned to: " .. assignedZone.name)
+  end
+  
+end)
+
+
+function startMiningRock(zone)
+  -- Lets check if we already mined this zone or not to add it
+  if not zonesMined[zone.name] then
+    zonesMined[zone.name] = 0
+    print("Zone hasnt been mined in yet lets set it to zero")
   end
 
-  print("starting to mine " .. rock.x)
-  startMiningAnimation(rock)
+  if zonesMined[zone.name] == zone.maxMineAmount then
+    return print("This zone has reached its mine limit for now")
+  end
+
+  if isMining then
+    return
+  end
+
+
+  isMining = true
+  print("starting to mine " .. zone.name)
+  
+  startMiningAnimation(zone)
 end
