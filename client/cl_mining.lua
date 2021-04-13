@@ -1,18 +1,26 @@
-local miningZone = {
-  zone = BoxZone:Create(vector3(435.18, 2016.35, 110.49), 20, 20, {
-    name="mining_zone",
-    heading=340,
-    debugPoly=true,
-    minZ=106.69,
-    maxZ=114.29
-  }),
-  mineableBlocks = {
-    {x = 438.3135, y = 2014.07, z = 108.9353}
+local miningZones = {
+  -- zone = BoxZone:Create(vector3(435.18, 2016.35, 110.49), 20, 20, {
+  --   name="mining_zone",
+  --   heading=340,
+  --   debugPoly=true,
+  --   minZ=106.69,
+  --   maxZ=114.29
+  -- }),
+
+  {
+    area = BoxZone:Create(vector3(3413.32, 2725.6, 2.37), 14.6, 10, {
+      name="mining_zone",
+      heading=60,
+      debugPoly=true
+    }),  
+    mineableRocks = {
+      { id = "rock1", x = 3408.016, y = 2727.448, z = 1.913579 }
+    }
   }
+
 }
 
-
-
+local recentlyMinedRocks = {}
 local miningStatus = ""
 local mining = false
 local insideMiningZone = false
@@ -21,45 +29,41 @@ Citizen.CreateThread(function()
     while true do
         local plyPed = GetPlayerPed(-1)
         local coord = GetEntityCoords(plyPed)
-        insideMiningZone = miningZone.zone:isPointInside(coord)
-        if insideMiningZone and mining then
-          miningStatus = "You can start mining now"
+        
+        -- Lets loop through all zones and see if we're in one
+        for k, zone in pairs(miningZones) do
+          insideMiningZone = zone.area:isPointInside(coord)
 
-          -- Check if the player is near any mineable blocks
-          for k, block in pairs(miningZone.mineableBlocks) do
-            local dis = GetDistanceBetweenCoords(coord["x"], coord["y"], coord["z"], block["x"], block["y"], block["z"], false)
-            if dis < 2 then
-              miningStatus = "Mine meee"
+          if insideMiningZone and mining then
+            miningStatus = "Inside mining zone you can start mining now"
+
+            for k, rock in pairs(zone.mineableRocks) do
+
+              -- Lets loop through all the recently done rocks and exclude that one
+              local dis = GetDistanceBetweenCoords(coord["x"], coord["y"], coord["z"], rock["x"], rock["y"], rock["z"], false)
+              DrawText3Ds(rock["x"], rock["y"], rock["z"], rock.id)
+              
+              if dis < 2 then
+                miningStatus = "Mine meee " .. rock.id
+                if IsControlJustPressed(1, 86) then
+                  startMiningRock(rock)
+                end
+              end
+
+              
             end
+
+
+          else
+            miningStatus = "Please enter a mining zone"
           end
-          
-        else
-          miningStatus = "Please enter a mining zone"
+
         end
-        Citizen.Wait(500)
+
+        showText(miningStatus)
+        Citizen.Wait(1)
     end
 end)
-
-
-Citizen.CreateThread(function()
-  while true do
-      if mining then
-        for k, block in pairs(miningZone.mineableBlocks) do
-          DrawText3Ds(block["x"], block["y"], block["z"], "cunt")
-        end
-        showText(miningStatus)
-      end
-      Citizen.Wait(1)
-  end
-end)
-
-local hasRock = nil
-
-
-
-
-
-
 
 
 -- Event Handlers
@@ -69,35 +73,22 @@ AddEventHandler("np-mining:startMining", function(source)
     mining = true
     print("Wanting to start mining " .. source)
   end
-  
 end)
 
-function showText(message)
-  SetTextFont(0)
-  SetTextProportional(1)
-  SetTextScale(0.0, 0.5)
-  SetTextColour(128, 128, 128, 255)
-  SetTextDropshadow(0, 0, 0, 0, 255)
-  SetTextEdge(1, 0, 0, 0, 255)
-  SetTextDropShadow()
-  SetTextOutline()
-  SetTextEntry("STRING")
-  AddTextComponentString(message)
-  DrawText(100, 100)
-end
+RegisterNetEvent("np-mining:collectedRock")
+AddEventHandler("np-mining:collectedRock", function(rock)
 
-function DrawText3Ds(x,y,z, text)
-  local onScreen,_x,_y=World3dToScreen2d(x,y,z)
-  local px,py,pz=table.unpack(GetGameplayCamCoords())
-  
-  SetTextScale(0.35, 0.35)
-  SetTextFont(4)
-  SetTextProportional(1)
-  SetTextColour(255, 255, 255, 215)
-  SetTextEntry("STRING")
-  SetTextCentre(1)
-  AddTextComponentString(text)
-  DrawText(_x,_y)
-  local factor = (string.len(text)) / 370
-  DrawRect(_x,_y+0.0125, 0.015+ factor, 0.03, 41, 11, 41, 68)
+  recentlyMinedRocks[rock.id] = rock
+  print(recentlyMinedRocks[rock.id])
+  print("got a call that a rock was done " .. rock.id)  
+end)
+
+
+function startMiningRock(rock)
+  if recentlyMinedRocks[rock.id] then
+    return print("Rock has already been mined")
+  end
+
+  print("starting to mine " .. rock.x)
+  startMiningAnimation(rock)
 end
