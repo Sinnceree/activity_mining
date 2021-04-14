@@ -1,23 +1,3 @@
--- local miningZones = {
---   {
---     name = "mining_zone3",
---     area = CircleZone:Create(vector3(2950.13, 2793.35, 57.64), 72.329999999999, {
---       name="mining_zone3",
---       useZ=true,
---       debugPoly=true
---     }),
---     maxMineAmount = 3,
---     rocks = {
---       { object = nil, coords = vector3(2940.188, 2823.371, 44.90134), isBeingMined = false, mined = false },
---       { object = nil, coords = vector3(2929.267, 2819.22, 46.85793) , isBeingMined = false, mined = false },
---       { object = nil, coords = vector3(2941.953, 2795.005, 40.58472), isBeingMined = false, mined = false },
---       { object = nil, coords = vector3(2932.202, 2780.675, 39.45383), isBeingMined = false, mined = false },
---       { object = nil, coords = vector3(2921.778, 2793.148, 40.58374), isBeingMined = false, mined = false },
---       { object = nil, coords = vector3(2923.443, 2810.052, 43.59846), isBeingMined = false, mined = false },
---     }
---   },
--- }
-
 local playersMiningTotal = {}
 local playersZonesCompleted = {}
 
@@ -39,7 +19,37 @@ end)
 -- Called when player joins job to assign them a zone
 RegisterServerEvent("np-mining:assignZone")
 AddEventHandler("np-mining:assignZone", function()
-	local randomZone = Config.mining_zones[math.random(#Config.mining_zones)]
+	local zoneList = Config.mining_zones -- Stored so I can remove any zones if the person already did it and choose from that list
+
+	-- Let me check if player hit zone limit during this run?
+	if playersZonesCompleted[source] ~= nil and #playersZonesCompleted[source] >= Config.zone_limit then
+		TriggerEvent("np-mining:completedRun", source)
+		return print("You have completed max amount of zones this run")	
+	end
+
+	-- Loop through our zones and player mined zones and remove the ones theyve done
+	if playersZonesCompleted[source] ~= nil then
+		for index, zone in pairs(zoneList) do
+			for _, playerZoneDone in pairs (playersZonesCompleted[source]) do
+				if zone.id == playerZoneDone then
+					table.remove(zoneList, index)
+					print("Removing this zone because player has done it alrdy")
+				end
+			end
+		end
+	end
+
+	-- Check if their is any zones the player can do (edge case)
+	if #zoneList == 0 then
+		TriggerEvent("np-mining:completedRun")
+		return print("You have no more zones you can mine at this time.")
+	end
+
+	local randomZoneIndex = math.random(#zoneList)
+	local randomZone = zoneList[randomZoneIndex]
+	-- local recentlyMined = ZoneMinedRecently(randomZone, playersZonesCompleted[source], source)
+
+	playersMiningTotal[source] = nil -- Set to nil again once we move to another zone so then we can track that zone 
 	TriggerClientEvent("np-mining:assignedZone", source, randomZone)
 end)
 
@@ -57,25 +67,29 @@ AddEventHandler("np-mining:attemptMine", function(miningZone, miningRock)
 					print("Rock has already been mined")
 				elseif rock.isBeingMined then
 					print("Rock is currently being mined")
-				else
+				elseif zone.id == miningZone.id then
 					
-
-					-- Lets check if the player hit max amount of rocks
+					-- If the user doesnt exist in table create one with default number of mines set to 0
 					if playersMiningTotal[source] == nil then
-						playersMiningTotal[source] = 1
-					elseif playersMiningTotal[source] >= zone.maxMineAmount then
-						-- Put notification here to let user know they cant mine anymore in this zone
-						print("Cant mine this you're already done the amount in this zone")
-						return 
-					else
-						playersMiningTotal[source] = playersMiningTotal[source] + 1
+						print("im nil so should be logging")
+						playersMiningTotal[source] = { zone = miningZone.id, amount = 0 }
 					end
 
+					if playersMiningTotal[source].zone == zone.id then
+							if playersMiningTotal[source].amount >= zone.maxMineAmount then
+								return print("You can no longer mine in this zone for now. " .. playersMiningTotal[source].zone)
+							else
+								playersMiningTotal[source].amount = playersMiningTotal[source].amount + 1
+								print("Starting to mine rock " .. playersMiningTotal[source].amount)
+								rock.isBeingMined = true
+								rock.beingMinedBy = source
+								TriggerClientEvent("np-mining:beginMiningRock", source, zone, rock, source)
+								return
+							end
+					end
 
-					print("Starting to mine rock " .. playersMiningTotal[source])
-					rock.isBeingMined = true
-					rock.beingMinedBy = source
-					TriggerClientEvent("np-mining:beginMiningRock", source, zone, rock, source)
+					print("some how made it here?")
+
 				end
 
 			end
@@ -111,10 +125,16 @@ AddEventHandler("np-mining:completedMining", function(minedZone, minedRock, sour
 						end
 	
 						-- Player mined enough here needs to go to another zone
-						print(playersMiningTotal[source])
-						if playersMiningTotal[source] >= zone.maxMineAmount then
+						if playersMiningTotal[source].zone == zone.id and playersMiningTotal[source].amount >= zone.maxMineAmount then
 							-- Todo
-							print("Player is done in this zone move on.")
+
+							if (playersZonesCompleted[source] == nil) then
+								playersZonesCompleted[source] = {}
+							end
+
+							table.insert(playersZonesCompleted[source], minedZone.id)
+
+							print("Player is done in this zone move on. " .. playersZonesCompleted[source][1])
 							TriggerClientEvent("np-mining:unassignZone", source)
 						end
 						
@@ -129,6 +149,14 @@ AddEventHandler("np-mining:completedMining", function(minedZone, minedRock, sour
 	end)
 
 
+end)
+
+-- Called when the player completed their amount of zones
+RegisterServerEvent("np-mining:completedRun")
+AddEventHandler("np-mining:completedRun", function(src)
+	playersMiningTotal[src] = nil -- Remove how many rocks they mined
+	playersZonesCompleted[src] = nil -- Remove them from zones completed so when they strart the job again after a "cooldown" its backto default
+	TriggerClientEvent("np-mining:stopMining", src) -- Now lets tell client theyre not assigned a zone and reset their variables
 end)
 
 

@@ -35,7 +35,7 @@ function startMiningAnimation(zone, ped, rock, source)
 
       if hitsDone == 0 then
         pickaxe = CreateObject(GetHashKey("prop_tool_pickaxe"), 0, 0, 0, true, true, true) 
-        AttachEntityToEntity(pickaxe, ped, GetPedBoneIndex(ped, 28422), 0.0, -0.06, -0.04, -102, 177.0, -12.0, true, true, false, true, 0, true)
+        AttachEntityToEntity(pickaxe, ped, GetPedBoneIndex(ped, 28422), 0.0, -0.06, -0.04, -102.0, 177.0, -12.0, true, true, false, true, false, true)
       end
 
       Citizen.Wait(2500)

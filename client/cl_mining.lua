@@ -2,6 +2,7 @@
 local assignedZone = nil
 local isInZone = false
 local miningStatus = "Waiting to be assigned job"
+local isCurrentlyMining = false
 
 -- Todo ass player dropcheck and remove rocks they were currently mining if they were
 
@@ -20,6 +21,7 @@ Citizen.CreateThread(function()
         local rockDist = GetDistanceBetweenCoords(playerCoords, rock.coords)
         if rockDist < 3 then
           if IsControlJustPressed(1, 86) then
+            print("I am being clicked")
             TriggerServerEvent("np-mining:attemptMine", assignedZone, rock)
           end
         end
@@ -65,6 +67,7 @@ end)
 -- Called when we are mining a valid rock
 RegisterNetEvent("np-mining:beginMiningRock")
 AddEventHandler("np-mining:beginMiningRock", function(zone, rock, source)
+  isCurrentlyMining = true
   startMiningAnimation(zone, GetPlayerPed(-1), rock, source)
 end)
 
@@ -72,13 +75,21 @@ end)
 RegisterNetEvent("np-mining:collectRock")
 AddEventHandler("np-mining:collectRock", function(zone, rock, reward)
   print("Completed mining I got " .. reward)
+  isCurrentlyMining = false
 end)
 
 -- Called when user wants to stop
 RegisterNetEvent("np-mining:stopMining")
 AddEventHandler("np-mining:stopMining", function(zone, rock)
+
+  if assignedZone ~= nil then
+    assignedZone.area:destroy() -- Lets delete poly zone now
+  end
+
   assignedZone = nil
-  miningStatus = "Idling"
+  miningStatus = "Not currently mining"
+  isInZone = false
+  isCurrentlyMining = false
 end)
 
 
@@ -106,8 +117,7 @@ function generateRockObjs(rocks)
 
   for i, rock in pairs(newRocks) do
     local unused, objectZ = GetGroundZFor_3dCoord(rock.coords["x"], rock.coords["y"], 99999.0, 1)
-    rock.object = CreateObject(GetHashKey("prop_rock_3_d"), rock.coords["x"], rock.coords["y"], objectZ - 0.2, true, true, false)
-    print("Creating rock obj " .. rock.object)
+    rock.object = CreateObject(GetHashKey("prop_rock_3_d"), rock.coords["x"], rock.coords["y"], objectZ - 0.2, false, true, false)
     FreezeEntityPosition(rock.object, true)
     -- Maybe you want to create a PolyZone here so that you can "peak" to start mining
   end
