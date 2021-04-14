@@ -11,7 +11,7 @@ Citizen.CreateThread(function()
     Citizen.Wait(1)
 
     -- For debug only
-    if isInZone then
+    if isInZone and assignedZone then
       local playerPed = GetPlayerPed(-1)
       local playerCoords = GetEntityCoords(playerPed)
 
@@ -21,7 +21,6 @@ Citizen.CreateThread(function()
         if rockDist < 3 then
           if IsControlJustPressed(1, 86) then
             TriggerServerEvent("np-mining:attemptMine", assignedZone, rock)
-
           end
         end
         DrawText3Ds(rock.coords["x"], rock.coords["y"], rock.coords["z"], rock.id)
@@ -37,7 +36,7 @@ end)
 -- Called when the player gets assigned a zone
 RegisterNetEvent("np-mining:assignedZone")
 AddEventHandler("np-mining:assignedZone", function(zone)
-  zone.area = CircleZone:Create(zone.coords, 73, {
+  zone.area = CircleZone:Create(zone.coords, zone.circleSize, {
     name=zone.id,
     debugPoly=true,
   })
@@ -46,18 +45,40 @@ AddEventHandler("np-mining:assignedZone", function(zone)
 
   assignedZone = zone
   miningStatus = "Assigned to zone - " .. zone.id
+  print("You have been assigned to a new zone " .. zone.id)
+end)
+
+-- Called when the player gets assigned a zone
+RegisterNetEvent("np-mining:unassignZone")
+AddEventHandler("np-mining:unassignZone", function(zone)
+  Citizen.CreateThread(function()
+    miningStatus = "Looking for a new zone"
+    assignedZone.area:destroy()
+    assignedZone = nil
+    isInZone = false
+    print("UNassigned zone")
+    Citizen.Wait(5000)
+    TriggerServerEvent("np-mining:assignZone")
+  end)
 end)
 
 -- Called when we are mining a valid rock
 RegisterNetEvent("np-mining:beginMiningRock")
-AddEventHandler("np-mining:beginMiningRock", function(zone, rock)
-  startMiningAnimation(zone, GetPlayerPed(-1), rock)
+AddEventHandler("np-mining:beginMiningRock", function(zone, rock, source)
+  startMiningAnimation(zone, GetPlayerPed(-1), rock, source)
 end)
 
 -- Called when we are done breaking the rock and going to collect it
 RegisterNetEvent("np-mining:collectRock")
 AddEventHandler("np-mining:collectRock", function(zone, rock, reward)
   print("Completed mining I got " .. reward)
+end)
+
+-- Called when user wants to stop
+RegisterNetEvent("np-mining:stopMining")
+AddEventHandler("np-mining:stopMining", function(zone, rock)
+  assignedZone = nil
+  miningStatus = "Idling"
 end)
 
 
@@ -73,7 +94,7 @@ function handlePlayerEntering(isPointInside, point)
       print("player left zone")
       removeRockObjs(assignedZone.rocks)
       isInZone = false
-      miningStatus = "Enter Your assigned mining zone"
+      miningStatus = "Enter Your assigned mining zone - " .. assignedZone.id
     end
   end
   

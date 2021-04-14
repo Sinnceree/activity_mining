@@ -19,6 +19,7 @@
 -- }
 
 local playersMiningTotal = {}
+local playersZonesCompleted = {}
 
 AddEventHandler("playerDropped", function()
 	for _, zone in pairs(Config.mining_zones) do
@@ -57,21 +58,24 @@ AddEventHandler("np-mining:attemptMine", function(miningZone, miningRock)
 				elseif rock.isBeingMined then
 					print("Rock is currently being mined")
 				else
+					
 
 					-- Lets check if the player hit max amount of rocks
 					if playersMiningTotal[source] == nil then
 						playersMiningTotal[source] = 1
 					elseif playersMiningTotal[source] >= zone.maxMineAmount then
+						-- Put notification here to let user know they cant mine anymore in this zone
 						print("Cant mine this you're already done the amount in this zone")
 						return 
 					else
 						playersMiningTotal[source] = playersMiningTotal[source] + 1
 					end
 
+
 					print("Starting to mine rock " .. playersMiningTotal[source])
 					rock.isBeingMined = true
 					rock.beingMinedBy = source
-					TriggerClientEvent("np-mining:beginMiningRock", source, zone, rock)
+					TriggerClientEvent("np-mining:beginMiningRock", source, zone, rock, source)
 				end
 
 			end
@@ -84,39 +88,57 @@ end)
 
 -- Called when player is done mining the rock
 RegisterServerEvent("np-mining:completedMining")
-AddEventHandler("np-mining:completedMining", function(minedZone, minedRock)
+AddEventHandler("np-mining:completedMining", function(minedZone, minedRock, source)
 
-	for _, zone in pairs(Config.mining_zones) do
-
-		if minedZone.id == zone.id then
-
-			for _, rock in pairs(zone.rocks) do
+	Citizen.CreateThread(function()
+		for _, zone in pairs(Config.mining_zones) do
 	
-				if rock.id == minedRock.id then
-					rock.isBeingMined = false
-					rock.isMined = true
+			if minedZone.id == zone.id then
+	
+				for _, rock in pairs(zone.rocks) do
 		
-					-- Figure out what they got
-					local chance = math.random(0, 100)
+					if rock.id == minedRock.id then
+						rock.isBeingMined = false
+						rock.isMined = true
+			
+						-- Figure out what they got
+						local chance = math.random(0, 100)
+			
+						if chance < 50 then
+							TriggerClientEvent("np-mining:collectRock", source, zone, rock, "gem")
+						else
+							TriggerClientEvent("np-mining:collectRock", source, zone, rock, "rock")
+						end
+	
+						-- Player mined enough here needs to go to another zone
+						print(playersMiningTotal[source])
+						if playersMiningTotal[source] >= zone.maxMineAmount then
+							-- Todo
+							print("Player is done in this zone move on.")
+							TriggerClientEvent("np-mining:unassignZone", source)
+						end
+						
+					end
 		
-					if chance < 50 then
-						TriggerClientEvent("np-mining:collectRock", source, zone, rock, "gem")
-					else
-						TriggerClientEvent("np-mining:collectRock", source, zone, rock, "rock")
-					end
-
-					-- Player mined enough here needs to go to another zone
-					if playersMiningTotal[source] >= zone.maxMineAmount then
-						-- Todo
-						print("Player is done in this zone move on.")
-					end
-					
 				end
 	
+	
 			end
-
-
 		end
-	end
+	
+	end)
 
+
+end)
+
+
+RegisterServerEvent("np-mining:genRock")
+AddEventHandler("np-mining:genRock", function(coords)
+	print(coords)
+	file = io.open( "12313123" .. "-Coords.txt", "a")
+	if file then
+	file:write(coords)
+	file:write("\n")
+	end
+	file:close()
 end)

@@ -13,7 +13,7 @@ function showText(message)
   DrawText(100, 100)
 end
 
-function startMiningAnimation(zone, ped, rock)
+function startMiningAnimation(zone, ped, rock, source)
   local hitsDone = 0
   local pickaxe = nil
   local hitsRequired = 3
@@ -47,7 +47,7 @@ function startMiningAnimation(zone, ped, rock)
         DeleteEntity(pickaxe)
         DeleteObject(pickaxe)
         print("finished mining delete axe")
-        TriggerServerEvent("np-mining:completedMining", zone, rock)
+        TriggerServerEvent("np-mining:completedMining", zone, rock, source)
         break
     end  
       
