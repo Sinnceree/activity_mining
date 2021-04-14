@@ -31,7 +31,7 @@ AddEventHandler("np-mining:assignZone", function()
 	-- Let me check if player hit zone limit during this run?
 	if playersZonesCompleted[source] ~= nil and #playersZonesCompleted[source] >= Config.zone_limit then
 		TriggerEvent("np-mining:completedRun", source)
-		return print("You have completed max amount of zones this run")	
+		return print("You have completed max amount of zones this run")	 -- Notify User with UI
 	end
 
 	-- Loop through our zones and player mined zones and remove the ones theyve done
@@ -50,7 +50,7 @@ AddEventHandler("np-mining:assignZone", function()
 	-- Check if their is any zones the player can do (edge case)
 	if #zoneList == 0 then
 		TriggerEvent("np-mining:completedRun")
-		return print("You have no more zones you can mine at this time.")
+		return print("You have no more zones you can mine at this time.") -- Notify User with UI
 	end
 
 	local randomZoneIndex = math.random(#zoneList)
@@ -72,11 +72,11 @@ AddEventHandler("np-mining:attemptMine", function(miningZone, miningRock)
 			if rock.id == miningRock.id then
 
 				if rock.isMined then
-					return print("Rock has already been mined")
+					return print("Rock has already been mined") -- Notify User with UI
 				end
 
 				if rock.isBeingMined then
-					return print("Rock is currently being mined")
+					return print("Rock is currently being mined") -- Notify User with UI
 				end
 
 				if zone.id == miningZone.id then
@@ -99,8 +99,6 @@ AddEventHandler("np-mining:attemptMine", function(miningZone, miningRock)
 								return
 							end
 					end
-
-					print("some how made it here?")
 
 				end
 
@@ -131,9 +129,9 @@ AddEventHandler("np-mining:completedMining", function(minedZone, minedRock, sour
 						local chance = math.random(0, 100)
 			
 						if chance < 50 then
-							TriggerClientEvent("np-mining:collectRock", source, zone, rock, "gem")
+							TriggerClientEvent("np-mining:collectRock", source, zone, rock, "gem") -- Notify User with UI
 						else
-							TriggerClientEvent("np-mining:collectRock", source, zone, rock, "rock")
+							TriggerClientEvent("np-mining:collectRock", source, zone, rock, "rock") -- Notify User with UI
 						end
 	
 						-- Player mined enough here needs to go to another zone
@@ -146,7 +144,7 @@ AddEventHandler("np-mining:completedMining", function(minedZone, minedRock, sour
 
 							table.insert(playersZonesCompleted[source], minedZone.id)
 
-							print("Player is done in this zone move on. " .. playersZonesCompleted[source][1])
+							print("Player is done in this zone move on. " .. playersZonesCompleted[source][1]) -- Notify User with UI
 							TriggerClientEvent("np-mining:unassignZone", source)
 						end
 						
