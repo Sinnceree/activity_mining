@@ -1,11 +1,12 @@
 Config = {}
 
 Config.zone_limit = 2
+Config.required_rock_hits = 3
 Config.mining_zones = {
   {
     id = "mining_zone1",
     circleSize = 73,
-    coords = vector3(2950.13, 2793.35, 57.64), 
+    coords = vector3(2950.13, 2793.35, 57.64),
     maxMineAmount = 1, -- Max amount of rocks a player can mine in that specific zone
     rocks = {
       { id = "rock1", object = nil, coords = vector3(2940.188, 2823.371, 44.90134), isBeingMined = false, mined = false, beingMinedBy = nil },
@@ -35,7 +36,6 @@ Config.mining_zones = {
       { id = "rock9", object = nil, coords = vector3(3886.747, 4348.654, 5.457541), isBeingMined = false, mined = false, beingMinedBy = nil },
       { id = "rock10", object = nil, coords = vector3(3858.857, 4320.858, 7.456657), isBeingMined = false, mined = false, beingMinedBy = nil },
       { id = "rock11", object = nil, coords = vector3(3855.625, 4314.179, 7.057076), isBeingMined = false, mined = false, beingMinedBy = nil },
-      { id = "rock12", object = nil, coords = vector3(3855.728, 4309.399, 6.994028), isBeingMined = false, mined = false, beingMinedBy = nil },
     },
   }
 

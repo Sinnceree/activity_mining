@@ -4,8 +4,6 @@ local isInZone = false
 local miningStatus = "Waiting to be assigned job"
 local isCurrentlyMining = false
 
--- Todo ass player dropcheck and remove rocks they were currently mining if they were
-
 Citizen.CreateThread(function()
 
   while true do
@@ -19,9 +17,8 @@ Citizen.CreateThread(function()
       for i, rock in pairs(assignedZone.rocks) do
 
         local rockDist = GetDistanceBetweenCoords(playerCoords, rock.coords)
-        if rockDist < 3 then
+        if rockDist < 2 then
           if IsControlJustPressed(1, 86) then
-            print("I am being clicked")
             TriggerServerEvent("np-mining:attemptMine", assignedZone, rock)
           end
         end
@@ -66,9 +63,9 @@ end)
 
 -- Called when we are mining a valid rock
 RegisterNetEvent("np-mining:beginMiningRock")
-AddEventHandler("np-mining:beginMiningRock", function(zone, rock, source)
+AddEventHandler("np-mining:beginMiningRock", function(zone, rock, hitsNeeded, source)
   isCurrentlyMining = true
-  startMiningAnimation(zone, GetPlayerPed(-1), rock, source)
+  startMiningAnimation(zone, GetPlayerPed(-1), rock, hitsNeeded, source)
 end)
 
 -- Called when we are done breaking the rock and going to collect it

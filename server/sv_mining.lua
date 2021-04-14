@@ -37,6 +37,7 @@ AddEventHandler("np-mining:assignZone", function()
 				end
 			end
 		end
+
 	end
 
 	-- Check if their is any zones the player can do (edge case)
@@ -64,10 +65,14 @@ AddEventHandler("np-mining:attemptMine", function(miningZone, miningRock)
 			if rock.id == miningRock.id then
 
 				if rock.isMined then
-					print("Rock has already been mined")
-				elseif rock.isBeingMined then
-					print("Rock is currently being mined")
-				elseif zone.id == miningZone.id then
+					return print("Rock has already been mined")
+				end
+
+				if rock.isBeingMined then
+					return print("Rock is currently being mined")
+				end
+
+				if zone.id == miningZone.id then
 					
 					-- If the user doesnt exist in table create one with default number of mines set to 0
 					if playersMiningTotal[source] == nil then
@@ -83,7 +88,7 @@ AddEventHandler("np-mining:attemptMine", function(miningZone, miningRock)
 								print("Starting to mine rock " .. playersMiningTotal[source].amount)
 								rock.isBeingMined = true
 								rock.beingMinedBy = source
-								TriggerClientEvent("np-mining:beginMiningRock", source, zone, rock, source)
+								TriggerClientEvent("np-mining:beginMiningRock", source, zone, rock, Config.required_rock_hits, source)
 								return
 							end
 					end

@@ -1,22 +1,19 @@
+local pickaxe = nil
 
-function showText(message)
-  SetTextFont(0)
-  SetTextProportional(1)
-  SetTextScale(0.0, 0.5)
-  SetTextColour(128, 128, 128, 255)
-  SetTextDropshadow(0, 0, 0, 0, 255)
-  SetTextEdge(1, 0, 0, 0, 255)
-  SetTextDropShadow()
-  SetTextOutline()
-  SetTextEntry("STRING")
-  AddTextComponentString(message)
-  DrawText(100, 100)
+function givePlayerPickaxe(ped)
+  pickaxe = CreateObject(GetHashKey("prop_tool_pickaxe"), 0, 0, 0, true, true, true) 
+  AttachEntityToEntity(pickaxe, ped, GetPedBoneIndex(ped, 28422), 0.0, -0.06, -0.04, -102.0, 177.0, -12.0, true, true, false, true, false, true)
 end
 
-function startMiningAnimation(zone, ped, rock, source)
+function removePlayerPickaxe()
+  DetachEntity(pickaxe, 1, true)
+  DeleteEntity(pickaxe)
+  DeleteObject(pickaxe)
+end
+
+function startMiningAnimation(zone, ped, rock, hitsNeeded, source)
   local hitsDone = 0
-  local pickaxe = nil
-  local hitsRequired = 3
+  local hitsRequired = hitsNeeded
 
   Citizen.CreateThread(function()
 
@@ -33,20 +30,19 @@ function startMiningAnimation(zone, ped, rock, source)
       
       TaskPlayAnim(ped, "melee@large_wpn@streamed_core", "ground_attack_on_spot", 8.0, 8.0, -1, 80, 0, 0, 0, 0)
 
+      -- Just started animation so give the player the pickaxd
       if hitsDone == 0 then
-        pickaxe = CreateObject(GetHashKey("prop_tool_pickaxe"), 0, 0, 0, true, true, true) 
-        AttachEntityToEntity(pickaxe, ped, GetPedBoneIndex(ped, 28422), 0.0, -0.06, -0.04, -102.0, 177.0, -12.0, true, true, false, true, false, true)
+        givePlayerPickaxe(ped)
       end
 
       Citizen.Wait(2500)
       ClearPedTasks(ped)
       hitsDone = hitsDone + 1
 
-      if hitsDone >= 3 then
-        DetachEntity(pickaxe, 1, true)
-        DeleteEntity(pickaxe)
-        DeleteObject(pickaxe)
-        print("finished mining delete axe")
+      if hitsDone >= hitsNeeded then
+        removePlayerPickaxe()
+        Citizen.Wait(250)
+        pickupRock() -- Called to hold rock in hand with animation until player puts the item in the truck/car?
         TriggerServerEvent("np-mining:completedMining", zone, rock, source)
         break
     end  
@@ -80,9 +76,9 @@ function pickupRock()
     Citizen.Wait(1)
     local ped = PlayerPedId()	
     if not holding then
-      TaskPlayAnim((GetPlayerPed(-1)),"anim@heists@box_carry@","idle",4.0, 1.0, -1,49,0, 0, 0, 0)
+      TaskPlayAnim(ped,"anim@heists@box_carry@","idle",4.0, 1.0, -1,49,0, 0, 0, 0)
       rockObject = CreateObject(GetHashKey("prop_rock_4_cl_2"), 0, 0, 0, true, true, true) 
-      AttachEntityToEntity(rockObject, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 0x49D9), 0.40, -0.02, -0.02, 0, 0, 0, strue, true, false, true, 1, true)
+      AttachEntityToEntity(rockObject, ped, GetPedBoneIndex(ped, 28422), 0, -0.25, -0.04, -102.0, 177.0, -12.0, true, true, false, true, false, true)
     end
 
     Citizen.Wait(5000)
@@ -98,9 +94,25 @@ function pickupRock()
 
 end
 
+-- Used to generate a prop
 function createProp(x, y, prop)
   local unused, objectZ = GetGroundZFor_3dCoord(x, y, 99999.0, 1)
   local obj = CreateObject(GetHashKey(prop), x, y, objectZ, true, true, false)
   FreezeEntityPosition(obj, true)
   return obj
+end
+
+-- Used to show text on top left of screen aka (mining status)
+function showText(message)
+  SetTextFont(0)
+  SetTextProportional(1)
+  SetTextScale(0.0, 0.5)
+  SetTextColour(128, 128, 128, 255)
+  SetTextDropshadow(0, 0, 0, 0, 255)
+  SetTextEdge(1, 0, 0, 0, 255)
+  SetTextDropShadow()
+  SetTextOutline()
+  SetTextEntry("STRING")
+  AddTextComponentString(message)
+  DrawText(100, 100)
 end
