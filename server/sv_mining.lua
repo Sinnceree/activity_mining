@@ -1,6 +1,13 @@
 local playersMiningTotal = {}
 local playersZonesCompleted = {}
 
+Citizen.CreateThread(function()
+	while true do
+		Citizen.Wait(Config.rock_reset_time * 1000)
+		resetZoneRocks()
+	end
+end)
+
 AddEventHandler("playerDropped", function()
 	for _, zone in pairs(Config.mining_zones) do
 		for _, rock in pairs(zone.rocks) do
@@ -174,4 +181,9 @@ AddEventHandler("np-mining:genRock", function(coords)
 	file:write("\n")
 	end
 	file:close()
+end)
+
+RegisterServerEvent("np-mining:resetRock")
+AddEventHandler("np-mining:resetRock", function()
+	resetZoneRocks()
 end)
