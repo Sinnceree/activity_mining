@@ -171,17 +171,17 @@ AddEventHandler("np-mining:completedRun", function(src)
 	TriggerClientEvent("np-mining:stopMining", src) -- Now lets tell client theyre not assigned a zone and reset their variables
 end)
 
-
-RegisterServerEvent("np-mining:genRock")
-AddEventHandler("np-mining:genRock", function(coords)
-	print(coords)
-	file = io.open( "12313123" .. "-Coords.txt", "a")
-	if file then
-	file:write(coords)
-	file:write("\n")
-	end
-	file:close()
-end)
+-- Debug event used to generate rock coords
+-- RegisterServerEvent("np-mining:genRock")
+-- AddEventHandler("np-mining:genRock", function(coords)
+-- 	print(coords)
+-- 	file = io.open( "12313123" .. "-Coords.txt", "a")
+-- 	if file then
+-- 	file:write(coords)
+-- 	file:write("\n")
+-- 	end
+-- 	file:close()
+-- end)
 
 RegisterServerEvent("np-mining:resetRock")
 AddEventHandler("np-mining:resetRock", function()
