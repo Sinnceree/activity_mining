@@ -5,32 +5,34 @@ local miningStatus = "Waiting to be assigned job"
 local isCurrentlyMining = false
 
 Citizen.CreateThread(function()
-
   while true do
     Citizen.Wait(1)
-
     -- For debug only
     if isInZone and assignedZone then
-      local playerPed = GetPlayerPed(-1)
-      local playerCoords = GetEntityCoords(playerPed)
-
-      for i, rock in pairs(assignedZone.rocks) do
-
-        local rockDist = GetDistanceBetweenCoords(playerCoords, rock.coords)
-        if rockDist < 2 then
-          if IsControlJustPressed(1, 86) then
-            TriggerServerEvent("np-mining:attemptMine", assignedZone, rock)
-          end
-        end
-        DrawText3Ds(rock.coords["x"], rock.coords["y"], rock.coords["z"], rock.id)
-
+      if IsControlJustPressed(1, 86) then 
+        attempToMineRock()
       end
-
     end
 
     showText(miningStatus)
   end
 end)
+
+function attempToMineRock()
+  local ped = PlayerPedId()
+  local playerCoord = GetEntityCoords(ped)
+  local target = GetOffsetFromEntityInWorldCoords(ped, vector3(0,2,-3))
+  local testRay = CastRayPointToPoint(playerCoord, target, 17, ped, 7)
+  local _, hit, hitLocation, surfaceNormal, rockObj, _ = GetRaycastResult(testRay)
+
+  for _, rock in pairs(assignedZone.rocks) do
+    if rock.object == rockObj then
+      TriggerServerEvent("np-mining:attemptMine", assignedZone, rock)
+    end
+      
+  end
+
+end
 
 -- Called when the player gets assigned a zone
 RegisterNetEvent("np-mining:assignedZone")
