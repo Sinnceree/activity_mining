@@ -81,6 +81,8 @@ function pickupRock()
       AttachEntityToEntity(rockObject, ped, GetPedBoneIndex(ped, 28422), 0, -0.25, -0.04, -102.0, 177.0, -12.0, true, true, false, true, false, true)
     end
 
+    -- this down here is to drop the rock
+    -- This would work like how you pick up tv's and microwaves if they have the "rock" item it shows
     Citizen.Wait(5000)
     ClearPedTasks(ped)
     DetachEntity(rockObject, 1, true)

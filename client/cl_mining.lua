@@ -51,36 +51,25 @@ end
 -- Called when the player gets assigned a zone
 RegisterNetEvent("np-mining:assignedZone")
 AddEventHandler("np-mining:assignedZone", function(zone)
-  local canDoActivity = false
   local playerServerId = GetPlayerServerId(PlayerId())
 
+  zone.area = CircleZone:Create(zone.coords, zone.circleSize, {
+    name=zone.id,
+    debugPoly=true,
+  })
+
+  zone.area:onPlayerInOut(handlePlayerEntering)
+
+  assignedZone = zone
+  miningStatus = "Assigned to zone - " .. zone.id
+  sendNotification("You have been assigned to a new zone " .. zone.id, playerServerId)
+
   if Config.enableNopixelExports then
-    canDoActivity = exports["np-activities"]:canDoActivity("activity_mining", playerServerId)
+    exports["np-activities"]:activityInProgress("activity_mining", playerServerId)
   else
-    canDoActivity = true
+    sendNotification("Activity in progress", playerServerId)
   end
 
-  if canDoActivity then
-    zone.area = CircleZone:Create(zone.coords, zone.circleSize, {
-      name=zone.id,
-      debugPoly=true,
-    })
-  
-    zone.area:onPlayerInOut(handlePlayerEntering)
-  
-    assignedZone = zone
-    miningStatus = "Assigned to zone - " .. zone.id
-    sendNotification("You have been assigned to a new zone " .. zone.id, playerServerId)
-
-    if Config.enableNopixelExports then
-      exports["np-activities"]:activityInProgress("activity_mining", playerServerId)
-    else
-      sendNotification("Activity in progress", playerServerId)
-    end
-
-  else
-    sendNotification("You cant do this actvity at this time.", playerServerId)
-  end
 
 end)
 
