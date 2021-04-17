@@ -7,6 +7,7 @@ Config.mining_zones = {
   {
     id = "mining_zone1",
     circleSize = 73,
+    rock_prop = "prop_rock_3_d", -- The rock object this zone will generate
     coords = vector3(2950.13, 2793.35, 57.64),
     maxMineAmount = 3, -- Max amount of rocks a player can mine in that specific zone
     rocks = {
@@ -23,6 +24,7 @@ Config.mining_zones = {
   {
     id = "mining_zone2", 
     circleSize = 70,
+    rock_prop = "prop_rock_3_d", -- The rock object this zone will generate
     coords = vector3(3871.44, 4318.67, 37.88),
     maxMineAmount = 3, -- Max amount of rocks a player can mine in that specific zone
     rocks = {

@@ -95,7 +95,7 @@ function handlePlayerEntering(isPointInside, point)
   if assignedZone then
     if isPointInside then
       print("Player entered zone")
-      generateRockObjs(assignedZone.rocks)
+      generateRockObjs(assignedZone.rocks, assignedZone.rock_prop)
       isInZone = true
       miningStatus = "Start mining rocks!"
     else
@@ -109,12 +109,12 @@ function handlePlayerEntering(isPointInside, point)
 end
 
 -- Called when player enters a mining zone and needs to generate the rocks to mine
-function generateRockObjs(rocks)
+function generateRockObjs(rocks, prop)
   local newRocks = rocks
 
   for i, rock in pairs(newRocks) do
     local unused, objectZ = GetGroundZFor_3dCoord(rock.coords["x"], rock.coords["y"], 99999.0, 1)
-    rock.object = CreateObject(GetHashKey("prop_rock_3_d"), rock.coords["x"], rock.coords["y"], objectZ - 0.2, false, true, false)
+    rock.object = CreateObject(GetHashKey(prop), rock.coords["x"], rock.coords["y"], objectZ - 0.2, false, true, false)
     FreezeEntityPosition(rock.object, true)
     -- Maybe you want to create a PolyZone here so that you can "peak" to start mining
   end
