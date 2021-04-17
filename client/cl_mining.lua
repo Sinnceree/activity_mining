@@ -10,7 +10,7 @@ Citizen.CreateThread(function()
     -- For debug only
     if isInZone and assignedZone then
       if IsControlJustPressed(1, 86) then 
-        attempToMineRock()
+        attempToMineRock() -- This can be changed to an event handler so if you want to call it when you use an item
       end
     end
 
