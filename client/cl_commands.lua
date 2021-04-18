@@ -23,6 +23,14 @@ RegisterCommand("stopmining", function(source, args)
   TriggerEvent("np-mining:stopMining")
 end, false)
 
+
+-- This is was here for testing to give me a pickaxe to mine (can remove this)
+-- RegisterCommand("givepickaxe", function(source, args)
+--   local playerServerId = GetPlayerServerId(PlayerId())
+--   exports["np-activities"]:giveInventoryItem(playerServerId, Config.required_item, 5)
+--   sendNotification("Gae item", playerServerId)
+-- end, false)
+
 -- RegisterCommand("genrock", function(source, args)
 --   local playerPed = GetPlayerPed(-1)
 --   TriggerServerEvent("np-mining:genRock", GetEntityCoords(playerPed))
