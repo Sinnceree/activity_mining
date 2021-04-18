@@ -125,14 +125,15 @@ AddEventHandler("np-mining:completedMining", function(minedZone, minedRock, sour
 						rock.isBeingMined = false
 						rock.isMined = true
 			
-						-- Figure out what they got
-						local chance = math.random(0, 100)
-			
-						if chance < 50 then
-							TriggerClientEvent("np-mining:collectRock", source, zone, rock, "gem") -- Notify User with UI
-						else
-							TriggerClientEvent("np-mining:collectRock", source, zone, rock, "rock") -- Notify User with UI
-						end
+						-- Figure out what they got (Could either do check here or give them just a rock and when they go to NPC it chooses randomly there.)
+						-- local chance = math.random(0, 100)
+						-- if chance < 50 then
+						-- 	TriggerClientEvent("np-mining:collectRock", source, zone, rock, "gem") -- Notify User with UI
+						-- else
+						-- 	TriggerClientEvent("np-mining:collectRock", source, zone, rock, "rock") -- Notify User with UI
+						-- end
+
+						TriggerClientEvent("np-mining:collectRock", source, zone, rock, "rock")
 	
 						-- Player mined enough here needs to go to another zone
 						if playersMiningTotal[source].zone == zone.id and playersMiningTotal[source].amount >= zone.maxMineAmount then
