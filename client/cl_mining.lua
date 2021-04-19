@@ -23,7 +23,7 @@ function attempToMineRock()
   local playerServerId = GetPlayerServerId(PlayerId())
 
   if Config.enableNopixelExports then
-    hasPickaxe = exports["np-activities"]:hasInventoryItem(playerServerId, Config.required_item)
+    hasPickaxe = exports["np-activities"]:hasInventoryItem(playerServerId, Config.requiredItem)
   else
     hasPickaxe = true
   end
@@ -149,7 +149,7 @@ function handlePlayerEntering(isPointInside, point)
   if assignedZone then
     if isPointInside then
       print("Player entered zone")
-      generateRockObjs(assignedZone.rocks, assignedZone.rock_prop)
+      generateRockObjs(assignedZone.rocks, assignedZone.rockProp)
       isInZone = true
       miningStatus = "Start mining rocks!"
     else

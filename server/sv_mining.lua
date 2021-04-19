@@ -3,13 +3,13 @@ local playersZonesCompleted = {}
 
 Citizen.CreateThread(function()
 	while true do
-		Citizen.Wait(Config.rock_reset_time * 1000)
+		Citizen.Wait(Config.rockResetTime * 1000)
 		resetZoneRocks()
 	end
 end)
 
 AddEventHandler("playerDropped", function()
-	for _, zone in pairs(Config.mining_zones) do
+	for _, zone in pairs(Config.miningZones) do
 		for _, rock in pairs(zone.rocks) do
 			
 			if rock.beingMinedBy == source and not mined then
@@ -26,10 +26,10 @@ end)
 -- Called when player joins job to assign them a zone
 RegisterServerEvent("np-mining:assignZone")
 AddEventHandler("np-mining:assignZone", function()
-	local zoneList = Config.mining_zones -- Stored so I can remove any zones if the person already did it and choose from that list
+	local zoneList = Config.miningZones -- Stored so I can remove any zones if the person already did it and choose from that list
 
 	-- Let me check if player hit zone limit during this run?
-	if playersZonesCompleted[source] ~= nil and #playersZonesCompleted[source] >= Config.zone_limit then
+	if playersZonesCompleted[source] ~= nil and #playersZonesCompleted[source] >= Config.zoneLimit then
 		TriggerEvent("np-mining:completedRun", source)
 		return print("You have completed max amount of zones this run")	 -- Notify User with UI
 	end
@@ -67,7 +67,7 @@ RegisterServerEvent("np-mining:attemptMine")
 AddEventHandler("np-mining:attemptMine", function(miningZone, miningRock)
 
 	-- Look for which zone theyre in
-	for _, zone in pairs(Config.mining_zones) do
+	for _, zone in pairs(Config.miningZones) do
 		for _, rock in pairs(zone.rocks) do
 			if rock.id == miningRock.id then
 
@@ -95,7 +95,7 @@ AddEventHandler("np-mining:attemptMine", function(miningZone, miningRock)
 								print("Starting to mine rock " .. playersMiningTotal[source].amount)
 								rock.isBeingMined = true
 								rock.beingMinedBy = source
-								TriggerClientEvent("np-mining:beginMiningRock", source, zone, rock, Config.required_rock_hits, source)
+								TriggerClientEvent("np-mining:beginMiningRock", source, zone, rock, Config.requiredRockHits, source)
 								return
 							end
 					end
@@ -115,7 +115,7 @@ RegisterServerEvent("np-mining:completedMining")
 AddEventHandler("np-mining:completedMining", function(minedZone, minedRock, source)
 
 	Citizen.CreateThread(function()
-		for _, zone in pairs(Config.mining_zones) do
+		for _, zone in pairs(Config.miningZones) do
 	
 			if minedZone.id == zone.id then
 	

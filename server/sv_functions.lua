@@ -16,7 +16,7 @@ end
 
 function resetZoneRocks()
 	print("Checking if any rocks need to be reset...")
-	for _, zone in pairs(Config.mining_zones) do
+	for _, zone in pairs(Config.miningZones) do
 		for _, rock in pairs(zone.rocks) do
 
 			if not rock.isBeingMined and rock.isMined then

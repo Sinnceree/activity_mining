@@ -1,15 +1,15 @@
 Config = {}
 
-Config.zone_limit = 2 -- Amount of zones a person can do in one "run"
-Config.required_rock_hits = 3 -- How many times a rock needs to be hit before its "broken"
-Config.rock_reset_time = 600 -- Every x time check if rock is mined and reset it (set to 10 minutes atm)
-Config.required_item = "pickaxe"
+Config.zoneLimit = 2 -- Amount of zones a person can do in one "run"
+Config.requiredRockHits = 3 -- How many times a rock needs to be hit before its "broken"
+Config.rockResetTime = 600 -- Every x time check if rock is mined and reset it (set to 10 minutes atm)
+Config.requiredItem = "pickaxe"
 
-Config.mining_zones = {
+Config.miningZones = {
   {
     id = "mining_zone1",
     circleSize = 73,
-    rock_prop = "prop_rock_3_d", -- The rock object this zone will generate
+    rockProp = "prop_rock_3_d", -- The rock object this zone will generate
     coords = vector3(2950.13, 2793.35, 57.64),
     maxMineAmount = 3, -- Max amount of rocks a player can mine in that specific zone
     rocks = {
@@ -26,7 +26,7 @@ Config.mining_zones = {
   {
     id = "mining_zone2", 
     circleSize = 70,
-    rock_prop = "prop_rock_3_d", -- The rock object this zone will generate
+    rockProp = "prop_rock_3_d", -- The rock object this zone will generate
     coords = vector3(3871.44, 4318.67, 37.88),
     maxMineAmount = 3, -- Max amount of rocks a player can mine in that specific zone
     rocks = {
