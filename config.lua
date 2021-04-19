@@ -3,6 +3,8 @@ Config = {}
 Config.zone_limit = 2 -- Amount of zones a person can do in one "run"
 Config.required_rock_hits = 3 -- How many times a rock needs to be hit before its "broken"
 Config.rock_reset_time = 600 -- Every x time check if rock is mined and reset it (set to 10 minutes atm)
+Config.required_item = "pickaxe"
+
 Config.mining_zones = {
   {
     id = "mining_zone1",
