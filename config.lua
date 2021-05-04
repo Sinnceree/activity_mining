@@ -4,6 +4,8 @@ Config.zoneLimit = 2 -- Amount of zones a person can do in one "run"
 Config.requiredRockHits = 3 -- How many times a rock needs to be hit before its "broken"
 Config.rockResetTime = 600 -- Every x time check if rock is mined and reset it (set to 10 minutes atm)
 Config.requiredItem = "pickaxe"
+Config.timeToComplete = 0
+Config.enableNopixelExports = true
 
 Config.miningZones = {
   {

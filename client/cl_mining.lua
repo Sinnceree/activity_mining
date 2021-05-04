@@ -65,7 +65,7 @@ AddEventHandler("np-mining:assignedZone", function(zone)
   sendNotification("You have been assigned to a new zone " .. zone.id, playerServerId)
 
   if Config.enableNopixelExports then
-    exports["np-activities"]:activityInProgress("activity_mining", playerServerId)
+    exports["np-activities"]:activityInProgress("activity_mining", playerServerId, Config.timeToComplete)
   else
     sendNotification("Activity in progress", playerServerId)
   end
